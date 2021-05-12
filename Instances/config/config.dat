@@ -1,0 +1,12 @@
+# file name: ../AMMMLabHeuristics/data/instance_XX.dat
+instancesDirectory = output;
+fileNamePrefix = inst;
+fileNameExtension = dat;
+numInstances = 1;
+
+n = 4;   # num. talks
+t = 2;   # num. time slots
+r = 2;   # num. lecture rooms
+d = 1;   # distance
+
+
