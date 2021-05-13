@@ -26,37 +26,42 @@ class Instance(object):
     def __init__(self, config, inputData):
         self.config = config
         self.inputData = inputData
-        nTasks = inputData.nTasks
-        nCPUs = inputData.nCPUs
-        rt = inputData.rt
-        self.rc = inputData.rc
+        self.n = inputData.n
+        self.t = inputData.t
+        self.r = inputData.r
+        self.d = inputData.d
+        self.p = inputData.P
+        self.q = inputData.Q
 
-        self.tasks = [None] * nTasks  # vector with tasks
-        for tId in range(0, nTasks):  # tId = 0..(nTasks-1)
-            self.tasks[tId] = Task(tId, rt[tId])
+    def getN(self):
+        return self.n
 
-        self.cpus = [None] * nCPUs  # vector with cpus
-        for cId in range(0, nCPUs):  # cId = 0..(nCPUs-1)
-            self.cpus[cId] = CPU(cId, self.rc[cId])
+    def getT(self):
+        return self.t
 
-    def getNumTasks(self):
-        return len(self.tasks)
+    def getR(self):
+        return self.r
 
-    def getNumCPUs(self):
-        return len(self.cpus)
+    def getP(self):
+        return self.r
 
-    def getTasks(self):
-        return self.tasks
+    def getD(self):
+        return self.d
 
-    def getCPUs(self):
-        return self.cpus
+    def computeNPair(self, talk):
+        contador = 0
+        for j in self.p[talk]:
+            if self.p[talk][j]:
+                contador += 1
+        return contador
 
     def createSolution(self):
-        solution = Solution(self.tasks, self.cpus, self.rc)
+        solution = Solution(self.n, self.t, self.r, self.d, self.p, self.q)
         solution.setVerbose(self.config.verbose)
         return solution
 
     def checkInstance(self):
+        """""
         totalCapacityCPUs = 0.0
         maxCPUCapacity = 0.0
         for cpu in self.cpus:
@@ -71,3 +76,7 @@ class Instance(object):
             if resources > maxCPUCapacity: return False
 
         return totalCapacityCPUs >= totalResourcesTasks
+        """""
+        #TODO check desabilitado temporalmente
+        return True
+

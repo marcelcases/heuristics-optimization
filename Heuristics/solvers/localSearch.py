@@ -131,7 +131,7 @@ class LocalSearch(_Solver):
 
     def exploreReassignment(self, solution):
         cpus = solution.cpus
-        curHighestLoad = solution.getFitness()
+        curHighestLoad = solution.getCost()
         bestNeighbor = solution
 
         sortedAssignments = self.getAssignmentsSortedByCPULoad(solution)
@@ -162,7 +162,7 @@ class LocalSearch(_Solver):
 
     def exploreExchange(self, solution):
 
-        curHighestLoad = solution.getFitness()
+        curHighestLoad = solution.getCost()
         bestNeighbor = solution
 
         # For the Exchange neighborhood and first improvement policy, try exchanging

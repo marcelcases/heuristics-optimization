@@ -28,37 +28,53 @@ class ValidateInputData(object):
     @staticmethod
     def validate(data):
         # Validate that all input parameters were found
-        for paramName in ['nTasks', 'nCPUs', 'rt', 'rc']:
+        for paramName in ['n', 't', 'r', 'd', 'P', 'Q']:
             if paramName not in data.__dict__:
                 raise AMMMException('Parameter/Set(%s) not contained in Input Data' % str(paramName))
 
-        # Validate nTasks
-        nTasks = data.nTasks
-        if not isinstance(nTasks, int) or (nTasks <= 0):
-            raise AMMMException('nTasks(%s) has to be a positive integer value.' % str(nTasks))
+        # Validate n
+        n = data.n
+        if not isinstance(n, int) or (n <= 0):
+            raise AMMMException('n must be int > 0')
 
-        # Validate nCPUs
-        nCPUs = data.nCPUs
-        if not isinstance(nCPUs, int) or (nCPUs <= 0):
-            raise AMMMException('nCPUs(%s) has to be a positive integer value.' % str(nCPUs))
+        # Validate t
+        t = data.t
+        if not isinstance(t, int) or (t <= 0):
+            raise AMMMException('t must be int > 0')
 
-        # Validate rt
-        data.rt = list(data.rt)
-        rt = data.rt
-        if len(rt) != nTasks:
-            raise AMMMException('Size of rt(%d) does not match with value of nTasks(%d).' % (len(rt), nTasks))
+        # Validate d
+        d = data.d
+        if not isinstance(d, int) or (d <= 0):
+            raise AMMMException('distance must be bigger than 0')
 
-        for value in rt:
-            if not isinstance(value, (int, float)) or (value < 0):
-                raise AMMMException('Invalid parameter value(%s) in rt. Should be a float greater or equal than zero.' % str(value))
+        # Validate p
+        data.P = list(data.P)
+        p = data.P
+        if len(p) != n:
+            raise AMMMException('Size of p does not match with value of n')
+        contador = 0
+        for value in p:
+            data.P[contador] = list(value)
+            if len(data.P[contador]) != n:
+                raise AMMMException('Invalid parameter p, each row must have n columns')
+            for item in data.P[contador]:
+                if not isinstance(item, int) or (item < 0) or (item > 1):
+                    raise AMMMException('Invalid parameter p, row/column must have a binary value 0,1')
+            contador += 1
 
-        # Validate rc
-        data.rc = list(data.rc)
-        rc = data.rc
-        if len(rc) != nCPUs:
-            raise AMMMException('Size of rc(%d) does not match with value of nCPUs(%d).' % (len(rc), nCPUs))
+        # Validate Q
+        data.Q = list(data.Q)
+        q = data.Q
+        if len(q) != n:
+            raise AMMMException('Size of q does not match with value of n')
+        contador = 0
+        for value in q:
+            data.Q[contador] = list(value)
+            if len(data.Q[contador]) != n:
+                raise AMMMException('Invalid parameter q, each row must have n columns')
+            for item in data.Q[contador]:
+                if not isinstance(item, int) or (item < 0) or (item > 1):
+                    raise AMMMException('Invalid parameter q, row/column must have a binary value 0,1')
+            contador += 1
 
-        for value in rc:
-            if not isinstance(value, (int, float)) or (value < 0):
-                raise AMMMException('Invalid parameter value(%s) in rc. Should be a float greater or equal than zero.' % str(value))
 

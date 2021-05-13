@@ -70,4 +70,4 @@ class Decoder(_Decoder):
             # assign the current task to the CPU that resulted in a minimum highest load
             solution.assign(task.getId(), bestCandidate.cpuId)
 
-        return solution, solution.getFitness()
+        return solution, solution.getCost()

@@ -84,7 +84,7 @@ class Solver_GRASP(_Solver):
         self.startTimeMeasure()
         incumbent = self.instance.createSolution()
         incumbent.makeInfeasible()
-        bestHighestLoad = incumbent.getFitness()
+        bestHighestLoad = incumbent.getCost()
         self.writeLogLine(bestHighestLoad, 0)
 
         iteration = 0
@@ -101,7 +101,7 @@ class Solver_GRASP(_Solver):
                 solution = localSearch.solve(solution=solution, startTime=self.startTime, endTime=endTime)
 
             if solution.isFeasible():
-                solutionHighestLoad = solution.getFitness()
+                solutionHighestLoad = solution.getCost()
                 if solutionHighestLoad < bestHighestLoad :
                     incumbent = solution
                     bestHighestLoad = solutionHighestLoad
