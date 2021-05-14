@@ -51,7 +51,7 @@ class Instance(object):
     def computeNPair(self, talk):
         contador = 0
         for j in self.p[talk]:
-            if self.p[talk][j]:
+            if j == 1:
                 contador += 1
         return contador
 
