@@ -37,7 +37,7 @@ class Assignment(object):
 # Solution includes functions to manage the solution, to perform feasibility
 # checks and to dump the solution into a string or file.
 class Solution(_Solution):
-    def __init__(self, n, t, r, d, P, Q):
+    def __init__(self, n, t, r, d, P, S):
         self.n = n
         self.t = t
         self.r = r
@@ -47,7 +47,7 @@ class Solution(_Solution):
         #self.timeSlotRoomTalk = {}
         self.cost = 0.0
         self.P = P
-        self.Q = Q
+        self.S = S
         #self.taskIdToCPUId = {}  # hash table: task Id => CPU Id
         #self.cpuIdToListTaskId = {}  # hash table: CPU Id => list<task Id>
         # vector of available capacities per CPU initialized as a copy of maxCapacityPerCPUId vector.
@@ -57,7 +57,7 @@ class Solution(_Solution):
         super().__init__()
 
     def isSecondaryRelated(self, t1, t2):
-        return self.Q[t1][t2] == 1
+        return self.S[t1][t2] == 1
 
     def isPrimaryRelated(self, t1, t2):
         return self.P[t1][t2] == 1

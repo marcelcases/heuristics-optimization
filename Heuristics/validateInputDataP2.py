@@ -28,7 +28,7 @@ class ValidateInputData(object):
     @staticmethod
     def validate(data):
         # Validate that all input parameters were found
-        for paramName in ['n', 't', 'r', 'd', 'P', 'Q']:
+        for paramName in ['n', 't', 'r', 'd', 'P', 'S']:
             if paramName not in data.__dict__:
                 raise AMMMException('Parameter/Set(%s) not contained in Input Data' % str(paramName))
 
@@ -63,16 +63,16 @@ class ValidateInputData(object):
             contador += 1
 
         # Validate Q
-        data.Q = list(data.Q)
-        q = data.Q
-        if len(q) != n:
-            raise AMMMException('Size of q does not match with value of n')
+        data.S = list(data.S)
+        s = data.S
+        if len(s) != n:
+            raise AMMMException('Size of s does not match with value of n')
         contador = 0
-        for value in q:
-            data.Q[contador] = list(value)
-            if len(data.Q[contador]) != n:
-                raise AMMMException('Invalid parameter q, each row must have n columns')
-            for item in data.Q[contador]:
+        for value in s:
+            data.S[contador] = list(value)
+            if len(data.S[contador]) != n:
+                raise AMMMException('Invalid parameter s, each row must have n columns')
+            for item in data.S[contador]:
                 if not isinstance(item, int) or (item < 0) or (item > 1):
                     raise AMMMException('Invalid parameter q, row/column must have a binary value 0,1')
             contador += 1

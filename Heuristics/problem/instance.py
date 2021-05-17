@@ -31,7 +31,7 @@ class Instance(object):
         self.r = inputData.r
         self.d = inputData.d
         self.p = inputData.P
-        self.q = inputData.Q
+        self.s = inputData.S
 
     def getN(self):
         return self.n
@@ -48,15 +48,22 @@ class Instance(object):
     def getD(self):
         return self.d
 
-    def computeNPair(self, talk):
+    def computePPair(self, talk):
         contador = 0
         for j in self.p[talk]:
             if j == 1:
                 contador += 1
         return contador
 
+    def computeSPair(self, talk):
+        contador = 0
+        for j in self.s[talk]:
+            if j == 1:
+                contador += 1
+        return contador
+
     def createSolution(self):
-        solution = Solution(self.n, self.t, self.r, self.d, self.p, self.q)
+        solution = Solution(self.n, self.t, self.r, self.d, self.p, self.s)
         solution.setVerbose(self.config.verbose)
         return solution
 

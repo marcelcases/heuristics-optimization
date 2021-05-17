@@ -39,8 +39,8 @@ class Solver_Greedy(_Solver):
 
         # get tasks and sort them by their total required resources in descending order
         talks = range(0, self.instance.getN())
-        # Sort task by the number of secondary relations
-        sortedTalks = sorted(talks, key=lambda t: self.instance.computeNPair(t), reverse=True)
+        # Sort task by the number of primary relations (break tie with secondary relation)
+        sortedTalks = sorted(talks, key=lambda t: (self.instance.computePPair(t), self.instance.computeSPair(t)), reverse=True)
 
 
         # for each task taken in sorted order
