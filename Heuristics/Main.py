@@ -58,8 +58,8 @@ class Main:
                     solver = Solver_BRKGA(decoder, instance)
                 else:
                     raise AMMMException('Solver %s not supported.' % str(self.config.solver))
-                solution = solver.solve(solution=initialSolution)
-                print('Solution (CPUid: [TasksId]): %s' % str(solution.cpuIdToListTaskId))
+                solution = solver.solve(solution=initialSolution, instance=instance)
+                print('Solution -> %s' % str(solution.talkToTimeSlotRoom))
                 solution.saveToFile(self.config.solutionFile)
             else:
                 print('Instance is infeasible.')

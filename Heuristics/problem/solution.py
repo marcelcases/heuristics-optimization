@@ -42,7 +42,6 @@ class Solution(_Solution):
         self.t = t
         self.r = r
         self.d = d
-        self.NTR = [[[]]] #NTR[N][T][R]
         self.talkToTimeSlotRoom = {}
         #self.timeSlotRoomTalk = {}
         self.cost = 0.0
@@ -58,6 +57,13 @@ class Solution(_Solution):
 
     def isSecondaryRelated(self, t1, t2):
         return self.S[t1][t2] == 1
+
+    def getAssignedTalksToTimeSlot(self, ts):
+        res = []
+        for k in self.talkToTimeSlotRoom.keys():
+            if ts in self.talkToTimeSlotRoom[k]:
+                res.append(k)
+        return res
 
     def isPrimaryRelated(self, t1, t2):
         return self.P[t1][t2] == 1
@@ -185,26 +191,12 @@ class Solution(_Solution):
 
     def __str__(self):
         strSolution = 'z = %10.8f;\n' % self.cost
-        if self.fitness == float('inf'): return strSolution
+        if self.cost == float('inf'): return strSolution
 
-        # Xtc: decision variable containing the assignment of tasks to CPUs
-        # pre-fill with no assignments (all-zeros)
-        xtc = []
-        for t in range(0, len(self.tasks)):  # t = 0..(nTasks-1)
-            xtcEntry = [0] * len(self.cpus)  # results in a vector of 0's with nCPUs elements
-            xtc.append(xtcEntry)
-
-        # iterate over hash table taskIdToCPUId and fill in xtc
-        for taskId, cpuId in self.taskIdToCPUId.items():
-            xtc[taskId][cpuId] = 1
-
-        strSolution += 'xtc = [\n'
-        for xtcEntry in xtc:
-            strSolution += '\t[ '
-            for xtcValue in xtcEntry:
-                strSolution += str(xtcValue) + ' '
-            strSolution += ']\n'
-        strSolution += '];\n'
+        for talk in self.talkToTimeSlotRoom:
+            slot = list(self.talkToTimeSlotRoom[talk].keys())[0]
+            room = list(self.talkToTimeSlotRoom[talk][slot].keys())[0]
+            strSolution += "Talk %s --> slot %s, room %s\n" % (talk+1, slot+1, room+1)
 
         return strSolution
 

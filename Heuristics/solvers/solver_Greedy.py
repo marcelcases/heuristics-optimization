@@ -66,6 +66,7 @@ class Solver_Greedy(_Solver):
         self.startTimeMeasure()
 
         solver = kwargs.get('solver', None)
+        instance = kwargs.get('instance', None)
         if solver is not None:
             self.config.solver = solver
         localSearch = kwargs.get('localSearch', None)
@@ -76,7 +77,7 @@ class Solver_Greedy(_Solver):
 
         solution = self.construction()
         if self.config.localSearch:
-            localSearch = LocalSearch(self.config, None)
+            localSearch = LocalSearch(self.config, instance)
             endTime= self.startTime + self.config.maxExecTime
             solution = localSearch.solve(solution=solution, startTime=self.startTime, endTime=endTime)
 
