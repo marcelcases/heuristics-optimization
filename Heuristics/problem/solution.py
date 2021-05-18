@@ -193,7 +193,7 @@ class Solution(_Solution):
         strSolution = 'z = %10.8f;\n' % self.cost
         if self.cost == float('inf'): return strSolution
 
-        for talk in self.talkToTimeSlotRoom:
+        for talk in sorted(self.talkToTimeSlotRoom):
             slot = list(self.talkToTimeSlotRoom[talk].keys())[0]
             room = list(self.talkToTimeSlotRoom[talk][slot].keys())[0]
             strSolution += "Talk %s --> slot %s, room %s\n" % (talk+1, slot+1, room+1)

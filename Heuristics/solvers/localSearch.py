@@ -71,6 +71,8 @@ class LocalSearch(_Solver):
             feasible = newSolution.assign(move.talkId, move.newTimeSlot, move.newRoom)
             if feasible and newSolution.cost <= bestCost:
                 bestCost = newSolution.cost
+            elif not feasible:
+                return solution.cost + 1 #Invalidate Neighbor
 
         return bestCost
 
