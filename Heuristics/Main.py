@@ -59,7 +59,7 @@ class Main:
                 else:
                     raise AMMMException('Solver %s not supported.' % str(self.config.solver))
                 solution = solver.solve(solution=initialSolution, instance=instance)
-                print('Solution -> %s' % str(solution.talkToTimeSlotRoom))
+               # print('Solution -> %s' % str(solution.talkToTimeSlotRoom))
                 solution.saveToFile(self.config.solutionFile)
             else:
                 print('Instance is infeasible.')
