@@ -31,8 +31,8 @@ class _Solver(object):
             {'id': 'iterations', 'name': 'Iterations', 'headerformat': '{:>12s}', 'valueformat': '{:>12d}'}
         ]
         self.logger = Logger(fields=logFields)
-        if instance is not None and self.config.verbose:
-            self.logger.printHeaders()
+        # if instance is not None and self.config.verbose:
+        #     self.logger.printHeaders()
         self.startTime = 0
         self.elapsedEvalTime = 0
         self.numSolutionsConstructed = 0
