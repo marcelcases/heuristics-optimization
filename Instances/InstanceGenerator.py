@@ -20,6 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os, random
 from AMMMGlobals import AMMMException
 import numpy as np
+import sys
+
+np.set_printoptions(threshold=sys.maxsize)
 
 class InstanceGenerator(object):
     # Generate instances based on read configuration.
@@ -50,6 +53,24 @@ class InstanceGenerator(object):
         fInstance.write('d = %d;\n\n' % d)
 
         load = n/(t*r)
+        # p = [0.5, 0.5]
+        # p = [0.55, 0.45]
+        # p = [0.575, 0.425]
+        # p = [0.585, 0.415]
+        # p = [0.6, 0.4]
+        p = [0.625, 0.375]
+        # p = [0.65, 0.35]
+        # p = [0.675, 0.325]
+        # p = [0.68, 0.32]
+        # p = [0.7, 0.3]
+        # p = [0.75, 0.25]
+        # p = [0.765, 0.235]
+        # p = [0.775, 0.225]
+        # p = [0.785, 0.215]
+        # p = [0.8, 0.2]
+        # p = [0.85, 0.15]
+        # p = [0.875, 0.125]
+        # p = [0.9, 0.1]
 
         # Populate P matrix
         P = np.zeros((n,n), dtype=int)
@@ -58,7 +79,7 @@ class InstanceGenerator(object):
                 if i==j:
                     P[i][j]=0 # zeros diagonal
                 elif i<j:
-                    P[i][j]=np.random.choice([0,1], p=[0.75,0.25])
+                    P[i][j]=np.random.choice([0,1], p=p)
                     P[j][i]=P[i][j] # make symmetric
 
         # Populate S matrix
@@ -68,10 +89,10 @@ class InstanceGenerator(object):
                 if i==j:
                     S[i][j]=0 # zeros diagonal
                 elif i<j:
-                    S[i][j]=np.random.choice([0,1], p=[0.75,0.25])
+                    S[i][j]=np.random.choice([0,1], p=p)
                     S[j][i]=S[i][j] # make symmetric
 
         fInstance.write('P = {};\n\n'.format(P))
-        fInstance.write('Q = {};\n\n'.format(S))
+        fInstance.write('S = {};\n\n'.format(S))
 
         fInstance.close()

@@ -24,7 +24,7 @@ from AMMMGlobals import AMMMException
 # checks and to dump the solution into a string or file.
 class _Solution(object):
     def __init__(self):
-        self.fitness = 0.0
+        self.cost = 0
         self.feasible = True
         self.verbose = False
 
@@ -33,12 +33,12 @@ class _Solution(object):
             raise AMMMException('verbose(%s) has to be a boolean value.' % str(verbose))
         self.verbose = verbose
 
-    def getFitness(self):
-        return self.fitness
+    def getCost(self):
+        return self.cost
 
     def makeInfeasible(self):
         self.feasible = False
-        self.fitness = float('inf')
+        self.cost = float('inf')
 
     def isFeasible(self):
         return self.feasible

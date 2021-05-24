@@ -28,13 +28,16 @@ from AMMMGlobals import AMMMException
 # A new solution can be created based on an existing solution and a list of
 # changes using the createNeighborSolution(solution, moves) function.
 class Move(object):
-    def __init__(self, taskId, curCPUId, newCPUId):
-        self.taskId = taskId
-        self.curCPUId = curCPUId
-        self.newCPUId = newCPUId
+    def __init__(self, talkId, curTimeSlot, curRoom ,newTimeSlot, newRoom):
+        self.talkId = talkId
+        self.curTimeSlot = curTimeSlot
+        self.curRoom = curRoom
+        self.newTimeSlot = newTimeSlot
+        self.newRoom = newRoom
+
 
     def __str__(self):
-        return "taskId: %d Move: %d -> %d" % (self.taskId, self.curCPUId, self.newCPUId)
+        return "talk: %d Move: %d -> %d" % (self.talkId, self.curTimeSlot, self.newTimeSlot)
 
 
 # Implementation of a local search using two neighborhoods and two different policies.
@@ -47,159 +50,93 @@ class LocalSearch(_Solver):
         super().__init__(config, instance)
 
     def createNeighborSolution(self, solution, moves):
-        # unassign the tasks specified in changes
-        # and reassign them to the new CPUs
 
         newSolution = copy.deepcopy(solution)
 
         for move in moves:
-            newSolution.unassign(move.taskId, move.curCPUId)
+            newSolution.unassign(move.talkId, move.curTimeSlot, move.curRoom)
 
         for move in moves:
-            feasible = newSolution.assign(move.taskId, move.newCPUId)
-            if not feasible: return None
+            newSolution.assign(move.talkId, move.newTimeSlot, move.newRoom)
 
         return newSolution
 
     def evaluateNeighbor(self, solution, moves):
-        newAvailCapPerCPUId = copy.deepcopy(solution.availCapacityPerCPUId)
+        bestCost = solution.cost
+        newSolution = copy.deepcopy(solution)
+        for move in moves:
+            newSolution.unassign(move.talkId, move.curTimeSlot, move.curRoom)
 
         for move in moves:
-            taskId = move.taskId
-            newAvailCapPerCPUId[move.curCPUId] += solution.tasks[taskId].getTotalResources()
+            feasible = newSolution.assign(move.talkId, move.newTimeSlot, move.newRoom)
+            if feasible and newSolution.cost <= bestCost:
+                bestCost = newSolution.cost
+            elif not feasible:
+                return solution.cost + 1 #Invalidate Neighbor
 
-        for move in moves:
-            taskId = move.taskId
-            newCPUId = move.newCPUId
-            taskResources = solution.tasks[taskId].getTotalResources()
-            if newAvailCapPerCPUId[newCPUId] < taskResources: return float('infinity')
-            newAvailCapPerCPUId[newCPUId] -= taskResources
+        return bestCost
 
-        highestLoad = 0.0
-        for cpu in solution.cpus:
-            cpuId = cpu.getId()
-            totalCapacity = cpu.getTotalCapacity()
-            availableCapacity = newAvailCapPerCPUId[cpuId]
-            highestLoad = max(highestLoad, (totalCapacity - availableCapacity) / totalCapacity)
+    def getTimeSlotswithAssignments(self, solution):
+        time_slots = list(range(0, solution.t))
 
-        return highestLoad
+        # create vector of assignments <task, <time_slot/room>>
+        timeSlotsWithAssignments = []
+        for time_slot in time_slots:
+            assignedTalks = solution.getAssignedTalksToTimeSlot(time_slot)
+            if assignedTalks is None: assignedTalks = []
+            assignedTalksWithPenalizationVal = []
+            for talk in assignedTalks:
+                talkPair = (talk, self.instance.computePPair(talk),
+                            list(solution.talkToTimeSlotRoom[talk][time_slot].keys())[0])
+                assignedTalksWithPenalizationVal.append(talkPair)
 
-    def getCPUswithAssignemnts(self, solution):
-        tasks = solution.tasks
-        cpus = solution.cpus
-
-        # create vector of assignments <task, cpu>
-        cpusWithAssignments = []
-        for cpu in cpus:
-            cpuId = cpu.getId()
-            load = solution.loadPerCPUId[cpuId]
-            assignedTasks = solution.cpuIdToListTaskId[cpuId]
-            if assignedTasks is None: assignedTasks = []
-            assignedTasksWithResources = []
-            for taskId in assignedTasks:
-                taskPair = (taskId, tasks[taskId].getTotalResources())
-                assignedTasksWithResources.append(taskPair)
-            assignedTasksWithResources.sort(key=lambda task: task[1], reverse=True)
-            cpuWithAssignments = (cpuId, load, solution.availCapacityPerCPUId[cpuId], assignedTasksWithResources)
-            cpusWithAssignments.append(cpuWithAssignments)
+            assignedTalksWithPenalizationVal.sort(key=lambda y: y[1], reverse=True)
+            timeSlotWithAssignments = (time_slot, assignedTalksWithPenalizationVal)
+            timeSlotsWithAssignments.append(timeSlotWithAssignments)
 
         # Sort assignments by the load of the assigned CPU in descending order.
-        cpusWithAssignments.sort(key=lambda cpuWithAssignment: cpuWithAssignment[1], reverse=True)
-        return cpusWithAssignments
+        timeSlotsWithAssignments.sort(key=lambda aux: sum([v[1] for v in aux[1]]), reverse=True)
+        return timeSlotsWithAssignments
 
-    def getAssignmentsSortedByCPULoad(self, solution):
-        tasks = solution.tasks
-        cpus = solution.cpus
 
-        # create vector of assignments <task, cpu>
-        assignments = []
-        for task in tasks:
-            taskId = task.getId()
-            cpuId = solution.getCPUIdAssignedToTaskId(taskId)
-            cpu = cpus[cpuId]
-            highestLoad = solution.loadPerCPUId[cpuId]
-            assignment = (task, cpu, highestLoad)
-            assignments.append(assignment)
-
-        # For best improvement policy it does not make sense to sort the tasks since all of them must be explored.
-        # However, for first improvement, we can start by the tasks assigned to the more loaded CPUs.
-        if self.policy == 'BestImprovement': return assignments
-
-        # Sort assignments by the load of the assigned CPU in descending order.
-        sorted_assignments = sorted(assignments, key=lambda x: x[2], reverse=True)
-        return sorted_assignments
-
-    def exploreReassignment(self, solution):
-        cpus = solution.cpus
-        curHighestLoad = solution.getFitness()
-        bestNeighbor = solution
-
-        sortedAssignments = self.getAssignmentsSortedByCPULoad(solution)
-
-        for assignment in sortedAssignments:
-            task = assignment[0]
-            taskId = task.getId()
-
-            curCPU = assignment[1]
-            curCPUId = curCPU.getId()
-
-            for cpu in cpus:
-                newCPUId = cpu.getId()
-                if newCPUId == curCPUId: continue
-
-                moves = [Move(taskId, curCPUId, newCPUId)]
-                neighborHighestLoad = self.evaluateNeighbor(solution, moves)
-                if curHighestLoad > neighborHighestLoad:
-                    neighbor = self.createNeighborSolution(solution, moves)
-                    if neighbor is None: continue
-                    if self.policy == 'FirstImprovement':
-                        return neighbor
-                    else:
-                        bestNeighbor = neighbor
-                        curHighestLoad = neighborHighestLoad
-
-        return bestNeighbor
 
     def exploreExchange(self, solution):
 
-        curHighestLoad = solution.getFitness()
+        curLowestCost = solution.getCost()
         bestNeighbor = solution
 
         # For the Exchange neighborhood and first improvement policy, try exchanging
-        # two tasks assigned to two different CPUs.
+        # two talks assigned to two different Assignments
 
-        cpusWithAssignments = self.getCPUswithAssignemnts(solution)
-        nCPUs = len(cpusWithAssignments)
+        timeSlotswithAssignments = self.getTimeSlotswithAssignments(solution)
+        nTimeSlots = len(timeSlotswithAssignments)
 
-        for h in range(0, nCPUs-1):  # i = 0..(nCPUs-2)
-            CPUPair_h = cpusWithAssignments[h]
-            availCapacityCPU_h = CPUPair_h[2]
-            for th in range(0, len(CPUPair_h[3])):
-                taskPair_h = CPUPair_h[3][th]
-                for l in range(1, nCPUs):  # i = 1..(nCPUs-1)
-                    CPUPair_l = cpusWithAssignments[l]
-                    availCapacityCPU_l = CPUPair_l[2]
-                    for tl in range(0, len(CPUPair_l[3])):
-                        taskPair_l = CPUPair_l[3][tl]
-                        if (taskPair_l[1] - taskPair_h[1]) <= availCapacityCPU_h and\
-                                (taskPair_h[1] - taskPair_l[1]) <= availCapacityCPU_l and \
-                                (taskPair_l[1] != taskPair_h[1]) and \
-                                (availCapacityCPU_l + taskPair_l[1] - taskPair_h[1]) != availCapacityCPU_h :
-                            moves = [Move(taskPair_h[0], CPUPair_h[0], CPUPair_l[0]), Move(taskPair_l[0], CPUPair_l[0], CPUPair_h[0])]
-                            neighborHighestLoad = self.evaluateNeighbor(solution, moves)
-                            if neighborHighestLoad <= curHighestLoad:
+        for h in range(0, nTimeSlots-1):  # i = 0..(nCPUs-2)
+            timeSlotPair_h = timeSlotswithAssignments[h]
+            #availCapacityCPU_h = CPUPair_h[2]
+            for th in range(0, len(timeSlotPair_h[1])):
+                talkPair_h = timeSlotPair_h[1][th]
+                for l in range(1, nTimeSlots):  # i = 1..(nCPUs-1)
+                    timeSlotPair_l = timeSlotswithAssignments[l]
+                    #availCapacityCPU_l = CPUPair_l[2]
+                    for tl in range(0, len(timeSlotPair_l[1])):
+                        talkPair_l = timeSlotPair_l[1][tl]
+                        if (talkPair_l[1] != talkPair_h[1]) :
+                            moves = [Move(talkPair_h[0], timeSlotPair_h[0], talkPair_h[2], timeSlotPair_l[0], talkPair_l[2]),
+                                     Move(talkPair_l[0], timeSlotPair_l[0], talkPair_l[2], timeSlotPair_h[0], talkPair_h[2],)]
+                            neighborLowestCost = self.evaluateNeighbor(solution, moves)
+                            if neighborLowestCost <= curLowestCost:
                                 neighbor = self.createNeighborSolution(solution, moves)
                                 if neighbor is None:
                                     raise AMMMException('[exploreExchange] No neighbouring solution could be created')
                                 if self.policy == 'FirstImprovement': return neighbor
                                 else:
                                     bestNeighbor = neighbor
-                                    curHighestLoad = neighborHighestLoad
+                                    curLowestCost = neighborLowestCost
         return bestNeighbor
 
     def exploreNeighborhood(self, solution):
         if self.nhStrategy == 'TaskExchange': return self.exploreExchange(solution)
-        elif self.nhStrategy == 'Reassignment': return self.exploreReassignment(solution)
         else: raise AMMMException('Unsupported NeighborhoodStrategy(%s)' % self.nhStrategy)
 
     def solve(self, **kwargs):
@@ -212,7 +149,7 @@ class LocalSearch(_Solver):
         endTime = kwargs.get('endTime', None)
 
         incumbent = initialSolution
-        incumbentFitness = incumbent.getFitness()
+        incumbentCost = incumbent.getCost()
         iterations = 0
 
         # keep iterating while improvements are found
@@ -220,9 +157,9 @@ class LocalSearch(_Solver):
             iterations += 1
             neighbor = self.exploreNeighborhood(incumbent)
             if neighbor is None: break
-            neighborFitness = neighbor.getFitness()
-            if incumbentFitness <= neighborFitness: break
+            neighborCost = neighbor.cost
+            if incumbentCost <= neighborCost: break
             incumbent = neighbor
-            incumbentFitness = neighborFitness
+            incumbentCost = neighborCost
 
         return incumbent

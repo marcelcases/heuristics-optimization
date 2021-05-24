@@ -28,7 +28,7 @@ class Solver_Greedy(_Solver):
     def _selectCandidate(self, candidateList):
         if self.config.solver == 'Greedy':
             # sort candidate assignments by highestLoad in ascending order
-            sortedCandidateList = sorted(candidateList, key=lambda x: x.highestLoad)
+            sortedCandidateList = sorted(candidateList, key=lambda x: x.cost)
             # choose assignment with minimum highest load
             return sortedCandidateList[0]
         return random.choice(candidateList)
@@ -38,16 +38,16 @@ class Solver_Greedy(_Solver):
         solution = self.instance.createSolution()
 
         # get tasks and sort them by their total required resources in descending order
-        tasks = self.instance.getTasks()
-        sortedTasks = sorted(tasks, key=lambda t: t.getTotalResources(), reverse=True)
+        talks = range(0, self.instance.getN())
+        # Sort task by the number of primary relations (break tie with secondary relation)
+        sortedTalks = sorted(talks, key=lambda t: (self.instance.computePPair(t), self.instance.computeSPair(t)), reverse=True)
 
 
         # for each task taken in sorted order
-        for task in sortedTasks:
-            taskId = task.getId()
+        for talk in sortedTalks:
 
             # compute feasible assignments
-            candidateList = solution.findFeasibleAssignments(taskId)
+            candidateList = solution.findFeasibleAssignments(talk)
 
             # no candidate assignments => no feasible assignment found
             if not candidateList:
@@ -58,7 +58,7 @@ class Solver_Greedy(_Solver):
             candidate = self._selectCandidate(candidateList)
 
             # assign the current task to the CPU that resulted in a minimum highest load
-            solution.assign(taskId, candidate.cpuId)
+            solution.assign(talk, candidate.time_slot, candidate.room)
 
         return solution
 
@@ -66,6 +66,7 @@ class Solver_Greedy(_Solver):
         self.startTimeMeasure()
 
         solver = kwargs.get('solver', None)
+        instance = kwargs.get('instance', None)
         if solver is not None:
             self.config.solver = solver
         localSearch = kwargs.get('localSearch', None)
@@ -76,12 +77,12 @@ class Solver_Greedy(_Solver):
 
         solution = self.construction()
         if self.config.localSearch:
-            localSearch = LocalSearch(self.config, None)
+            localSearch = LocalSearch(self.config, instance)
             endTime= self.startTime + self.config.maxExecTime
             solution = localSearch.solve(solution=solution, startTime=self.startTime, endTime=endTime)
 
         self.elapsedEvalTime = time.time() - self.startTime
-        self.writeLogLine(solution.getFitness(), 1)
+        self.writeLogLine(solution.getCost(), 1)
         self.numSolutionsConstructed = 1
         self.printPerformance()
 

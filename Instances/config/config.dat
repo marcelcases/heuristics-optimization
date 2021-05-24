@@ -1,12 +1,10 @@
 # file name: ../AMMMLabHeuristics/data/instance_XX.dat
 instancesDirectory = output;
-fileNamePrefix = inst;
+fileNamePrefix = test;
 fileNameExtension = dat;
 numInstances = 1;
 
-n = 4;   # num. talks
-t = 2;   # num. time slots
-r = 2;   # num. lecture rooms
-d = 1;   # distance
-
-
+n = 24;   # num. talks
+t = 6;   # num. time slots
+r = 4;   # num. lecture rooms
+d = 6;   # time distance bt. primarily related talks
