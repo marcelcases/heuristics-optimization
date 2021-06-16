@@ -36,7 +36,7 @@ The following solvers have been developed to optimize the cost of this problem:
 
 You can use the [Instance Generator](Instances/InstanceGenerator.py) to generate random instances to be solved using any of the solvers.
 
-Configure the parameters of the instance to be generated on [heuristics-optimization/Instances/config/config.dat](heuristics-optimization/Instances/config/config.dat)
+Configure the parameters of the instance to be generated on [Instances/config/config.dat](Instances/config/config.dat)
 
 For setting the density of 1s in primarily and secondarily related talks, modify variable `p` on [InstanceGenerator.py](Instances/InstanceGenerator.py). Notice that this has an impact on the feasibility of the instances, as well as the complexity for the solver.
 
@@ -52,4 +52,4 @@ Run `python Main.py`.
 
 ## Solutions
 
-The solutions obtained, in case there are some, will be stored on [Heuristics/solvers](Heuristics/solvers).
+The solutions obtained, in case there are some, will be stored on [Heuristics/solutions](Heuristics/solutions).
